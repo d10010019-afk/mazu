@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>媽祖平安符</title>
+  
+  <!-- PWA 雙系統桌面圖示與全螢幕設定 -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="媽祖平安符">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html {
+      width: 100%;
+      height: 100%;
+      background-color: #2b0600;
+      font-family: "Microsoft JhengHei", sans-serif;
+      overflow: hidden;
+    }
+
+    /* 網頁首頁背景畫面 */
+    #home-screen {
+      width: 100%;
+      height: 100%;
+      background-image: url('bg.jpg');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 50px;
+    }
+
+    /* 下載平安符按鈕 */
+    .btn {
+      padding: 15px 42px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #5c1900;
+      background: linear-gradient(180deg, #ffe885 0%, #f5b027 100%);
+      border: 2px solid #fff3b0;
+      border-radius: 50px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+      letter-spacing: 2px;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .btn:active { transform: scale(0.96); }
+
+    /* 動畫播放容器 */
+    #video-screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      position: relative;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 安裝教學提示視窗 */
+    #install-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 99;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+    .modal-box {
+      background: #fff8e7;
+      border: 2px solid #d49b27;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 340px;
+      text-align: center;
+      color: #4a1500;
+      line-height: 1.6;
+    }
+    .modal-box h3 { margin-bottom: 12px; font-size: 20px; color: #9e1b00; }
+    .modal-box p { font-size: 16px; margin-bottom: 18px; }
+    .close-btn {
+      padding: 10px 28px;
+      background: #9e1b00;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 首頁背景與按鈕 -->
+  <div id="home-screen">
+    <button id="download-btn" class="btn">下載平安符</button>
+  </div>
+
+  <!-- 2. 全螢幕動畫畫面 -->
+  <div id="video-screen">
+    <video id="mazu-video" src="video.mp4" playsinline loop></video>
+  </div>
+
+  <!-- 3. 安裝引導視窗 -->
+  <div id="install-modal">
+    <div class="modal-box">
+      <h3>恭請媽祖數位平安符</h3>
+      <p id="install-text"></p>
+      <button class="close-btn" onclick="startExperience()">我知道了，先看平安符</button>
+    </div>
+  </div>
+
+  <script>
+    let deferredPrompt;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const homeScreen = document.getElementById('home-screen');
+    const videoScreen = document.getElementById('video-screen');
+    const video = document.getElementById('mazu-video');
+    const downloadBtn = document.getElementById('download-btn');
+    const installModal = document.getElementById('install-modal');
+    const installText = document.getElementById('install-text');
+
+    // 攔截 Android 原生安裝提示
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    // 若使用者是從桌面「元寶圖示」點開，直接全螢幕播動畫
+    if (isStandalone) {
+      homeScreen.style.display = 'none';
+      videoScreen.style.display = 'block';
+      video.play().catch(() => {
+        // 若手機阻擋自動有聲播放，點擊畫面任一處即啟動
+        videoScreen.addEventListener('click', () => video.play(), { once: true });
+      });
+    }
+
+    // 點擊「下載平安符」按鈕
+    downloadBtn.addEventListener('click', async () => {
+      // Android 支援一鍵跳出安裝到桌面視窗
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        if (outcome === 'accepted') return;
+      }
+
+      // 判斷 iPhone 或其他瀏覽器，顯示對應的加到主畫面教學
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        installText.innerHTML = '請點擊瀏覽器下方正中間的 <b>「分享圖示（方框向上箭頭）」</b>，往下滑選擇 <b>「加入主畫面」</b>，即可將元寶平安符請回手機桌面！';
+      } else {
+        installText.innerHTML = '請點擊瀏覽器右上角的 <b>「⋮（選單）」</b>，選擇 <b>「加到主畫面」</b> 或 <b>「安裝應用程式」</b>，即可將元寶平安符請回手機桌面！';
+      }
+      installModal.style.display = 'flex';
+    });
+
+    // 關閉提示並直接播放動畫預覽
+    function startExperience() {
+      installModal.style.display = 'none';
+      homeScreen.style.display = 'none';
+      videoScreen.style.display = 'block';
+      video.play();
+    }
+  </script>
+</body>
+</html>
