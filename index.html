@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>媽祖平安符</title>
   
-  <!-- PWA 雙系統桌面圖示與全螢幕設定 -->
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,165 +14,278 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body, html {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background-color: #2b0600;
       font-family: "Microsoft JhengHei", sans-serif;
       overflow: hidden;
     }
 
-    /* 網頁首頁背景畫面 */
+    /* 首頁背景畫面 */
     #home-screen {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background-image: url('bg.jpg');
       background-size: cover;
       background-position: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: center;
+      display: flex; flex-direction: column;
+      justify-content: flex-end; align-items: center;
       padding-bottom: 50px;
     }
 
-    /* 下載平安符按鈕 */
     .btn {
-      padding: 15px 42px;
-      font-size: 22px;
-      font-weight: bold;
+      padding: 15px 42px; font-size: 22px; font-weight: bold;
       color: #5c1900;
       background: linear-gradient(180deg, #ffe885 0%, #f5b027 100%);
-      border: 2px solid #fff3b0;
-      border-radius: 50px;
+      border: 2px solid #fff3b0; border-radius: 50px;
       box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
-      letter-spacing: 2px;
-      cursor: pointer;
-      z-index: 10;
+      letter-spacing: 2px; cursor: pointer;
     }
-    .btn:active { transform: scale(0.96); }
 
-    /* 動畫播放容器 */
-    #video-screen {
-      display: none;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      position: relative;
+    /* 過爐儀式畫面 */
+    #ritual-screen {
+      display: none; width: 100%; height: 100%;
+      background: radial-gradient(circle, #5e1300 0%, #1f0300 100%);
+      color: #ffe885;
+      flex-direction: column; justify-content: center; align-items: center;
+      text-align: center; padding: 30px;
     }
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .ritual-card {
+      background: rgba(0, 0, 0, 0.55);
+      border: 2px solid #d49b27; border-radius: 20px;
+      padding: 30px 24px; max-width: 340px;
+      box-shadow: 0 0 25px rgba(245, 176, 39, 0.35);
     }
+    .ritual-title { font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #ffdf73; }
+    .ritual-desc { font-size: 17px; line-height: 1.7; color: #fff3d1; margin-bottom: 20px; }
+    
+    /* 進度圈圈與計數顯示 */
+    .circle-counter { font-size: 28px; font-weight: bold; color: #ff9d00; margin: 12px 0; }
+    .degree-hint { font-size: 14px; color: #d4b483; margin-bottom: 15px; }
+
+    /* 全螢幕動畫畫面 */
+    #video-screen { display: none; width: 100%; height: 100%; background: #000; }
+    video { width: 100%; height: 100%; object-fit: cover; }
 
     /* 安裝教學提示視窗 */
     #install-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.82);
-      z-index: 99;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.82); z-index: 99;
+      justify-content: center; align-items: center; padding: 24px;
     }
     .modal-box {
-      background: #fff8e7;
-      border: 2px solid #d49b27;
-      border-radius: 16px;
-      padding: 24px;
-      max-width: 340px;
-      text-align: center;
-      color: #4a1500;
-      line-height: 1.6;
+      background: #fff8e7; border: 2px solid #d49b27; border-radius: 16px;
+      padding: 24px; max-width: 340px; text-align: center;
+      color: #4a1500; line-height: 1.6;
     }
-    .modal-box h3 { margin-bottom: 12px; font-size: 20px; color: #9e1b00; }
-    .modal-box p { font-size: 16px; margin-bottom: 18px; }
     .close-btn {
-      padding: 10px 28px;
-      background: #9e1b00;
-      color: #fff;
-      border: none;
-      border-radius: 25px;
-      font-size: 16px;
-      cursor: pointer;
+      margin-top: 15px; padding: 10px 28px; background: #9e1b00;
+      color: #fff; border: none; border-radius: 25px; font-size: 16px;
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. 首頁背景與按鈕 -->
+  <!-- 1. 掃碼下載首頁 -->
   <div id="home-screen">
     <button id="download-btn" class="btn">下載平安符</button>
   </div>
 
-  <!-- 2. 全螢幕動畫畫面 -->
+  <!-- 2. 過數位香火爐儀式畫面 -->
+  <div id="ritual-screen">
+    <div class="ritual-card">
+      <div class="ritual-title" id="secret-trigger">大甲鎮瀾宮過爐儀式</div>
+      <div class="ritual-desc" id="ritual-status">正在感應您與大甲鎮瀾宮的距離，請允許手機定位權限...</div>
+      <div class="circle-counter" id="circle-text"></div>
+      <div class="degree-hint" id="degree-text"></div>
+      <button id="action-btn" class="btn" style="font-size:18px; padding:12px 28px;">開始感應過爐</button>
+    </div>
+  </div>
+
+  <!-- 3. 過爐成功後的平安符動畫 -->
   <div id="video-screen">
     <video id="mazu-video" src="video.mp4" playsinline loop></video>
   </div>
 
-  <!-- 3. 安裝引導視窗 -->
+  <!-- 4. 安裝到桌面提示 -->
   <div id="install-modal">
     <div class="modal-box">
-      <h3>恭請媽祖數位平安符</h3>
+      <h3 style="color:#9e1b00; margin-bottom:10px;">恭請媽祖數位平安符</h3>
       <p id="install-text"></p>
-      <button class="close-btn" onclick="startExperience()">我知道了，先看平安符</button>
+      <button class="close-btn" onclick="document.getElementById('install-modal').style.display='none'">我知道了</button>
     </div>
   </div>
 
   <script>
+    // 大甲鎮瀾宮座標與容許半徑(公尺)
+    const TEMPLE_LAT = 23.801775;
+    const TEMPLE_LNG = 120.461208;
+    const ALLOWED_RADIUS = 150; 
+
     let deferredPrompt;
+    let isAtTemple = false;
+    let secretClicks = 0;
+
+    // 繞圈計算變數
+    let lastAlpha = null;
+    let accumulatedAngle = 0;
+    let completedCircles = 0;
+    const TARGET_CIRCLES = 1; // 設定繞 3 圈（若想改 1 圈，把這裡改成 1 即可）
+
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isBlessed = localStorage.getItem('mazu_blessed') === 'true';
+
     const homeScreen = document.getElementById('home-screen');
+    const ritualScreen = document.getElementById('ritual-screen');
     const videoScreen = document.getElementById('video-screen');
     const video = document.getElementById('mazu-video');
-    const downloadBtn = document.getElementById('download-btn');
-    const installModal = document.getElementById('install-modal');
-    const installText = document.getElementById('install-text');
+    const statusText = document.getElementById('ritual-status');
+    const circleText = document.getElementById('circle-text');
+    const degreeText = document.getElementById('degree-text');
+    const actionBtn = document.getElementById('action-btn');
 
-    // 攔截 Android 原生安裝提示
+    // 攔截 Android 安裝提示
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
     });
 
-    // 若使用者是從桌面「元寶圖示」點開，直接全螢幕播動畫
+    // 判斷啟動狀態
     if (isStandalone) {
       homeScreen.style.display = 'none';
+      if (isBlessed) {
+        playMazuVideo();
+      } else {
+        ritualScreen.style.display = 'flex';
+        checkLocation();
+      }
+    }
+
+    // 點擊下載按鈕
+    document.getElementById('download-btn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt = null;
+        return;
+      }
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      document.getElementById('install-text').innerHTML = isIOS 
+        ? '請點擊下方 <b>「分享圖示」</b>，選擇 <b>「加入主畫面」</b>，將元寶請回桌面後再點開進行過爐！'
+        : '請點擊右上角 <b>「⋮」</b>，選擇 <b>「加到主畫面」</b>，將元寶請回桌面後再點開進行過爐！';
+      document.getElementById('install-modal').style.display = 'flex';
+    });
+
+    // 計算兩點距離(公尺)
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
+      const dp = (lat2-lat1) * Math.PI/180, dl = (lon2-lon1) * Math.PI/180;
+      const a = Math.sin(dp/2)*Math.sin(dp/2) + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)*Math.sin(dl/2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    // 檢查 GPS 位置
+    function checkLocation() {
+      if (!navigator.geolocation) {
+        statusText.innerText = "您的手機不支援定位功能。";
+        return;
+      }
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const dist = Math.round(getDistance(pos.coords.latitude, pos.coords.longitude, TEMPLE_LAT, TEMPLE_LNG));
+        if (dist <= ALLOWED_RADIUS) {
+          unlockCircling();
+        } else {
+          statusText.innerHTML = `您目前距離大甲鎮瀾宮約 <b>${dist} 公尺</b>。<br><br>請親臨聖殿香爐前，再點擊下方按鈕感應過爐！`;
+          actionBtn.innerText = "重新偵測位置";
+          actionBtn.onclick = checkLocation;
+        }
+      }, () => {
+        statusText.innerText = "無法取得位置，請確認手機已開啟 GPS 定位並允許網頁存取位置。";
+      });
+    }
+
+    // 抵達現場，啟動空中繞圈感應
+    function unlockCircling() {
+      isAtTemple = true;
+      statusText.innerHTML = `已抵達大甲鎮瀾宮聖殿！<br>請將手機平放（螢幕朝上），在空中畫圓<b>繞 ${TARGET_CIRCLES} 圈</b>過爐加持！`;
+      circleText.innerText = `已繞：0 / ${TARGET_CIRCLES} 圈`;
+      degreeText.innerText = "目前轉動角度：0°";
+      actionBtn.innerText = "點此啟動過爐感應";
+      actionBtn.onclick = requestOrientationPermission;
+    }
+
+    // 索取 iPhone/Android 陀螺儀方向權限
+    function requestOrientationPermission() {
+      actionBtn.style.display = 'none';
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then(state => {
+          if (state === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation);
+          } else {
+            statusText.innerText = "您拒絕了動作感應權限，請重新整理網頁並按「允許」。";
+          }
+        });
+      } else {
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+    }
+
+    // 偵測手機在空中畫圓繞圈（透過水平羅盤方位角 alpha 計算）
+    function handleOrientation(event) {
+      if (!isAtTemple || event.alpha === null) return;
+
+      const currentAlpha = event.alpha; // 0 ~ 360 度
+
+      if (lastAlpha !== null) {
+        let delta = currentAlpha - lastAlpha;
+
+        // 處理 360 度與 0 度交界處的數值跳躍
+        if (delta > 180) delta -= 360;
+        if (delta < -180) delta += 360;
+
+        // 過濾手部微幅抖動（大於 1.5 度才累計）
+        if (Math.abs(delta) > 1.5) {
+          accumulatedAngle += Math.abs(delta);
+          
+          const currentCircleProgress = Math.min(Math.round(accumulatedAngle % 360), 360);
+          degreeText.innerText = `本圈進度：${currentCircleProgress}° / 360°`;
+
+          // 每累計轉滿 360 度算完成一圈
+          const newCompleted = Math.floor(accumulatedAngle / 360);
+          if (newCompleted > completedCircles) {
+            completedCircles = newCompleted;
+            circleText.innerText = `已繞：${completedCircles} / ${TARGET_CIRCLES} 圈`;
+            if (navigator.vibrate) navigator.vibrate(250); // 每繞完一圈震動提示
+
+            // 繞滿目標圈數，過爐圓滿
+            if (completedCircles >= TARGET_CIRCLES) {
+              window.removeEventListener('deviceorientation', handleOrientation);
+              localStorage.setItem('mazu_blessed', 'true');
+              statusText.innerHTML = "<b>過爐圓滿！</b><br>大甲媽祖平安符已啟靈護佑。";
+              circleText.innerText = "✨ 庇佑隨身 ✨";
+              degreeText.innerText = "";
+              if (navigator.vibrate) navigator.vibrate([200, 100, 400]); // 完成長震動
+              setTimeout(playMazuVideo, 1500);
+            }
+          }
+        }
+      }
+      lastAlpha = currentAlpha;
+    }
+
+    function playMazuVideo() {
+      ritualScreen.style.display = 'none';
       videoScreen.style.display = 'block';
       video.play().catch(() => {
-        // 若手機阻擋自動有聲播放，點擊畫面任一處即啟動
         videoScreen.addEventListener('click', () => video.play(), { once: true });
       });
     }
 
-    // 點擊「下載平安符」按鈕
-    downloadBtn.addEventListener('click', async () => {
-      // Android 支援一鍵跳出安裝到桌面視窗
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        deferredPrompt = null;
-        if (outcome === 'accepted') return;
+    // 測試小機關：在家裡連續點擊標題「大甲鎮瀾宮過爐儀式」5下，可直接模擬抵達現場測試繞圈
+    document.getElementById('secret-trigger').addEventListener('click', () => {
+      secretClicks++;
+      if (secretClicks >= 5) {
+        unlockCircling();
       }
-
-      // 判斷 iPhone 或其他瀏覽器，顯示對應的加到主畫面教學
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (isIOS) {
-        installText.innerHTML = '請點擊瀏覽器下方正中間的 <b>「分享圖示（方框向上箭頭）」</b>，往下滑選擇 <b>「加入主畫面」</b>，即可將元寶平安符請回手機桌面！';
-      } else {
-        installText.innerHTML = '請點擊瀏覽器右上角的 <b>「⋮（選單）」</b>，選擇 <b>「加到主畫面」</b> 或 <b>「安裝應用程式」</b>，即可將元寶平安符請回手機桌面！';
-      }
-      installModal.style.display = 'flex';
     });
-
-    // 關閉提示並直接播放動畫預覽
-    function startExperience() {
-      installModal.style.display = 'none';
-      homeScreen.style.display = 'none';
-      videoScreen.style.display = 'block';
-      video.play();
-    }
   </script>
 </body>
 </html>
